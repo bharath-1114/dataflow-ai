@@ -1,10 +1,28 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut } from "lucide-react";
+import {
+  Upload,
+  Table,
+  BarChart3,
+  Sparkles,
+  MessageSquare,
+  LogOut,
+  LayoutGrid,
+} from "lucide-react";
+
+const navItems = [
+  { path: "/upload", label: "Upload", icon: Upload },
+  { path: "/table", label: "Table", icon: Table },
+  { path: "/full-table", label: "Full Table", icon: LayoutGrid },
+  { path: "/charts", label: "Charts", icon: BarChart3 },
+  { path: "/custom", label: "Custom", icon: Sparkles },
+  { path: "/chatbot", label: "Chatbot", icon: MessageSquare },
+];
 
 export const Navbar = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -20,6 +38,28 @@ export const Navbar = () => {
         <Link to="/" className="flex items-center">
           <Logo />
         </Link>
+
+        {/* Navigation - Only show when logged in */}
+        {user && (
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              const Icon = item.icon;
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant={isActive ? "nav-active" : "nav"}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Button>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">

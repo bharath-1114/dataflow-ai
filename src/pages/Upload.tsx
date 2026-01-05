@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useData } from "@/contexts/DataContext";
 import { useToast } from "@/hooks/use-toast";
-import { Upload as UploadIcon, FileSpreadsheet, Download, ArrowRight, X, Table, BarChart3 } from "lucide-react";
+import { Upload as UploadIcon, FileSpreadsheet, Download, ArrowRight, X } from "lucide-react";
 
 export default function Upload() {
   const [isDragging, setIsDragging] = useState(false);
@@ -86,6 +87,16 @@ export default function Upload() {
     }
   }, [handleFile]);
 
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -117,98 +128,120 @@ export default function Upload() {
   };
 
   return (
-    <div className="page-section">
-      <div className="upload-page">
-        <div className="panel" style={{ maxWidth: "600px", width: "100%" }}>
-          <h2 className="chart-title text-center mb-2">Upload & Convert</h2>
-          <p className="small text-center mb-6">Import a CSV file to get started with AI-powered analysis</p>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-6">
+      <div className="w-full max-w-2xl animate-fade-in">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Upload Your Data</h1>
+          <p className="text-muted-foreground">
+            Import a CSV file to get started with AI-powered analysis
+          </p>
+        </div>
 
-          {/* Drop Zone */}
-          <div
-            className={`file-drop-zone ${isDragging ? "active" : ""} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
-            onDrop={handleDrop}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-            onClick={() => document.getElementById("file-input")?.click()}
-          >
-            <input
-              id="file-input"
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileInput}
-            />
-            
-            {isProcessing ? (
-              <div className="flex flex-col items-center gap-4">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <p className="font-medium">Processing file...</p>
-              </div>
-            ) : file ? (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-                  <FileSpreadsheet className="h-8 w-8 text-primary" />
+        <Card className="shadow-soft">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary" />
+              CSV Upload
+            </CardTitle>
+            <CardDescription>
+              Drag and drop your file or click to browse
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`file-drop-zone cursor-pointer ${isDragging ? "active" : ""} ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={() => document.getElementById("file-input")?.click()}
+            >
+              <input
+                id="file-input"
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={handleFileInput}
+              />
+              
+              {isProcessing ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  <p className="font-medium">Processing file...</p>
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold">{file.name}</p>
-                  <p className="small">{(file.size / 1024).toFixed(1)} KB</p>
+              ) : file ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
+                    <FileSpreadsheet className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold">{file.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearFile();
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Remove
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearFile();
-                  }}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Remove
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
-                  <UploadIcon className="h-8 w-8 text-primary" />
+              ) : (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-muted">
+                    <UploadIcon className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-medium">Drop your CSV file here</p>
+                    <p className="text-sm text-muted-foreground">
+                      or click to browse
+                    </p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="font-medium">Drop your CSV file here</p>
-                  <p className="small">or click to browse</p>
+              )}
+            </div>
+
+            {data.length > 0 && (
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center justify-between rounded-lg bg-muted/50 p-4">
+                  <div>
+                    <p className="font-medium">{fileName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {data.length} rows • {Object.keys(data[0] || {}).length} columns
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={downloadJSON}>
+                      <Download className="h-4 w-4 mr-1" />
+                      JSON
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    className="flex-1"
+                    onClick={() => navigate("/table")}
+                  >
+                    View Dashboard
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/charts")}
+                  >
+                    View Charts
+                  </Button>
                 </div>
               </div>
             )}
-          </div>
-
-          {data.length > 0 && (
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between rounded-lg bg-muted/20 p-4">
-                <div>
-                  <p className="font-medium">{fileName}</p>
-                  <p className="small">
-                    {data.length} rows • {Object.keys(data[0] || {}).length} columns
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" onClick={downloadJSON}>
-                  <Download className="h-4 w-4 mr-1" />
-                  JSON
-                </Button>
-              </div>
-
-              <div className="flex gap-3">
-                <Button className="flex-1" onClick={() => navigate("/table")}>
-                  <Table className="h-4 w-4 mr-2" />
-                  View Table
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/charts")}>
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Charts
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <p className="small text-center mt-6">Choose a CSV and click Upload.</p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
